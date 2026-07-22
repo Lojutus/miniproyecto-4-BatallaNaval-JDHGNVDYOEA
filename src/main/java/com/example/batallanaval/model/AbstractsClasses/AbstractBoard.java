@@ -124,6 +124,7 @@ public abstract class AbstractBoard implements Shootable {
         if (state == CellState.HIT || state == CellState.SUNK) {
             throw new InvalidShotException("Esta celda ya fue disparada " + c);
         }
+        return true;
     }
 
 }

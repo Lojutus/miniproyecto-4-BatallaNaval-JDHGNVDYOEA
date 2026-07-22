@@ -1,5 +1,6 @@
 package com.example.batallanaval.controller;
 
+import com.example.batallanaval.controller.helpers.BoardViewUptader;
 import com.example.batallanaval.controller.helpers.FileManager;
 import com.example.batallanaval.controller.helpers.ShipsManager;
 import com.example.batallanaval.model.Classes.Boards.Board;
@@ -9,7 +10,9 @@ import com.example.batallanaval.model.Classes.Players.Human;
 import com.example.batallanaval.model.Classes.Players.Machine;
 import com.example.batallanaval.model.Classes.Utils.Coordinate;
 import com.example.batallanaval.model.Classes.Utils.Orientation;
+import com.example.batallanaval.model.Classes.Utils.ShotResult;
 import com.example.batallanaval.model.Exceptions.GameLoadableException;
+import com.example.batallanaval.model.Interfaces.BoardListener;
 
 /*
 Comentario de funcionamiento para borrar en la documentacion:
@@ -22,12 +25,15 @@ public class GameManager
 {
     public GameManager(){}
     private Boolean ready = false;
+    BoardViewUptader boardListenerHuman;
+    BoardViewUptader boardListenerMachine;
 
 
     GameState gameState;
     // PARA INICIALIZAR UN JUEGO SE NECESITA LAS POSICIONES DEL JUGADOR Y LA MAQUINA
     Board positionBoard = new Board();
     Board mainBoard = new Board();
+
     //crear los jugadores
     Human player;
     Machine machine;
@@ -36,11 +42,16 @@ public class GameManager
         try{
             player = new Human(nickname, positionBoard, mainBoard);
             machine = new Machine("machine", mainBoard , positionBoard);
-            return true;
+            return updateListeners();
         }
         catch (GameLoadableException e){
             return false;
         }
+    }
+    private Boolean updateListeners(){
+        positionBoard.addListener(boardListenerHuman);
+        mainBoard.addListener(boardListenerMachine);
+        return true;
     }
     // Despues de crear los tableros y referencialos a los jugadores se les debe añadir los barcos creandolos o  cargalos de un archivo
 
@@ -117,6 +128,13 @@ public class GameManager
         ShipsManager.restartInstance();
     }
 
+    public Boolean playerShot( int corX , int corY){
+        Coordinate coordinate = new Coordinate(corX, corY);
+        return mainBoard.shoot(coordinate) != ShotResult.WATER;
+    }
+    public void machineShot(){
+         machine.chooseShot(null) ;
+    }
 }
 
 
