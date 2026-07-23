@@ -20,6 +20,10 @@ public class BoardFileAdapter implements Loadable {
     }
 
     private void saveBoard(GameState state) throws GameLoadableException {
+        // Crear el directorio saves/ si no existe
+        java.io.File dir = new java.io.File(SAVE_DIRECTORY);
+        if (!dir.exists()) dir.mkdirs();
+
         String path = SAVE_DIRECTORY + state.getNickname() + BOARD_EXTENSION;
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(path))) {
             out.writeObject(state.getPositionBoard());
@@ -30,6 +34,9 @@ public class BoardFileAdapter implements Loadable {
     }
 
     private void saveInfo(GameState state) throws GameLoadableException {
+        java.io.File dir = new java.io.File(SAVE_DIRECTORY);
+        if (!dir.exists()) dir.mkdirs();
+
         String path = SAVE_DIRECTORY + state.getNickname() + INFO_EXTENSION;
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(path))) {
             writer.write(state.getNickname());

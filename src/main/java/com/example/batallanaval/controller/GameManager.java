@@ -164,6 +164,34 @@ public class GameManager
         return positionBoard.allShipsSunk();
     }
 
+    /** Guarda el estado actual de la partida. */
+    public boolean saveGame() {
+        try {
+            if (player == null) return false;
+            GameState state = new GameState(
+                player.getNickname(), positionBoard, mainBoard,
+                player.getEnemyShipSunk()
+            );
+            FileManager.getInstance().save(state);
+            return true;
+        } catch (Exception e) {
+            System.out.println("[saveGame] fallo: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /** Retorna true si existe un archivo de partida guardada para ese nickname. */
+    public static boolean hasSavedGame(String nickname) {
+        if (nickname == null || nickname.isBlank()) return false;
+        java.io.File f = new java.io.File("saves/" + nickname + ".ser");
+        return f.exists();
+    }
+
+    /** Devuelve el nickname del jugador actual (null si aún no se ha inicializado). */
+    public String getPlayerNickname() {
+        return player != null ? player.getNickname() : null;
+    }
+
     /**
      * Devuelve todas las coordenadas ocupadas por los barcos de la máquina.
      * Usado para el modo debug/comprobación del profesor.

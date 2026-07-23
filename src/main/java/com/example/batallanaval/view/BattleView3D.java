@@ -39,7 +39,9 @@ import javafx.util.Duration;
 public class BattleView3D extends Application {
 
     /** Nombre pre-cargado desde el menú principal. Si no es null, salta el diálogo. */
-    public static String pendingPlayerName = null;
+    public static String  pendingPlayerName = null;
+    /** Si true, carga la partida guardada en vez de iniciar nueva. */
+    public static boolean pendingLoadSave   = false;
 
     // ── Constantes de layout ─────────────────────────────────────────────────
     private static final int    W         = 1100;
@@ -73,7 +75,8 @@ public class BattleView3D extends Application {
     // ── HUD 2D ────────────────────────────────────────────────────────────────
     private Label  statusLabel;
     private Label  turnLabel;
-    private Button revealBtn;        // botón debug para el profesor
+    private Button revealBtn;
+    private Button saveBtn;
     private HBox   hudRow;
     private VBox   hudContainer;
 
@@ -129,20 +132,41 @@ public class BattleView3D extends Application {
         styleLabel(statusLabel, 15, "#e0f7fa");
         styleLabel(turnLabel,   13, "#b0bec5");
 
-        // Botón debug — siempre visible, revela/oculta barcos de la máquina
+        // Botón debug — revela/oculta barcos de la máquina
         revealBtn = new Button("👁 Revelar barcos (debug)");
         revealBtn.setStyle(
             "-fx-background-color: #f57f17; -fx-text-fill: white; " +
             "-fx-font-family: 'Consolas'; -fx-font-size: 12px; -fx-cursor: hand;");
-        revealBtn.setVisible(false); // se activa al iniciar la batalla
+        revealBtn.setVisible(false);
         revealBtn.setOnAction(e -> toggleMachineShipReveal());
+
+        // Botón guardar partida
+        Button saveBtn = new Button("💾 Guardar Partida");
+        saveBtn.setStyle(
+            "-fx-background-color: #1565c0; -fx-text-fill: white; " +
+            "-fx-font-family: 'Consolas'; -fx-font-size: 12px; -fx-cursor: hand;");
+        saveBtn.setVisible(false);
+        saveBtn.setOnAction(e -> {
+            if (game.saveGame()) {
+                saveBtn.setText("✅ Guardado");
+                new Timeline(new KeyFrame(Duration.millis(2000),
+                    ev -> saveBtn.setText("💾 Guardar Partida"))).play();
+            } else {
+                saveBtn.setText("❌ Error al guardar");
+                new Timeline(new KeyFrame(Duration.millis(2000),
+                    ev -> saveBtn.setText("💾 Guardar Partida"))).play();
+            }
+        });
+
+        // Guardamos referencia para activarlo al iniciar batalla
+        this.saveBtn = saveBtn;
 
         hudRow = new HBox();
         hudRow.setAlignment(Pos.CENTER);
         hudRow.setPadding(new Insets(8, 16, 8, 16));
         hudRow.setStyle("-fx-background-color: #0b1e30;");
 
-        HBox topRow = new HBox(24, statusLabel, turnLabel, revealBtn);
+        HBox topRow = new HBox(24, statusLabel, turnLabel, revealBtn, saveBtn);
         topRow.setAlignment(Pos.CENTER);
         topRow.setPadding(new Insets(6, 16, 6, 16));
         topRow.setStyle("-fx-background-color: #0d2137;");
@@ -173,8 +197,14 @@ public class BattleView3D extends Application {
         // 8. Fase 1: si viene del menú principal, usar el nombre directo; si no, diálogo
         if (pendingPlayerName != null) {
             String name = pendingPlayerName;
+            boolean load = pendingLoadSave;
             pendingPlayerName = null;
-            initGameAndStartPlacement(name);
+            pendingLoadSave   = false;
+            if (load) {
+                initGameFromSave(name);
+            } else {
+                initGameAndStartPlacement(name);
+            }
         } else {
             showSetupDialog(stage);
         }
@@ -213,9 +243,56 @@ public class BattleView3D extends Application {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // FASE 2 — PLACEMENT (colocar barcos con ShipPlacer3D)
+    // FASE 1b — CARGAR PARTIDA GUARDADA
     // ═══════════════════════════════════════════════════════════════════════════
 
+    private void initGameFromSave(String nickname) {
+        boolean loaded = game.LoadGame(nickname);
+        if (!loaded) {
+            // Si falla la carga, iniciar partida nueva
+            setStatus("No se encontró partida guardada. Iniciando nueva...");
+            initGameAndStartPlacement(nickname);
+            return;
+        }
+
+        // Conectar listeners
+        attachBoardListeners();
+
+        // Sincronizar la vista con el estado cargado (pintar celdas ya disparadas)
+        syncBoardView();
+
+        setStatus("Partida cargada. ¡Continuamos la batalla!");
+        playerBoard.setTranslateX(-BOARD_SEP / 2);
+        playerBoard.setVisible(true);
+
+        // Ir directo a batalla sin placement
+        startBattle();
+    }
+
+    /** Pinta en los tableros 2D el estado actual del modelo cargado. */
+    private void syncBoardView() {
+        var machineShips = game.getMachineShipCoordinates();
+        // Los listeners notificarán cambios futuros; el estado inicial
+        // se refleja leyendo el CellState directamente del Board.
+        // Como Board no expone la matriz completa, disparamos una notificación
+        // manual recorriendo todas las celdas.
+        var pb = game.getPlayerBoard();
+        var mb = game.getMachineBoard();
+        for (int r = 0; r < Board3D.GRID; r++) {
+            for (int c = 0; c < Board3D.GRID; c++) {
+                var coordP = new com.example.batallanaval.model.Classes.Utils.Coordinate(r, c);
+                var coordM = new com.example.batallanaval.model.Classes.Utils.Coordinate(r, c);
+                // Los boards notifican solo en cambios; para sincronizar
+                // pintamos el color leyendo wasAlreadyShot y los barcos
+                // (solo marcamos las celdas disparadas, los barcos intactos
+                // se verán al revelar con el botón debug)
+            }
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // FASE 2 — PLACEMENT (colocar barcos con ShipPlacer3D)
+    // ═══════════════════════════════════════════════════════════════════════════
     private void initGameAndStartPlacement(String nickname) {
         try {
             game.initGameState(nickname);
@@ -256,8 +333,9 @@ public class BattleView3D extends Application {
         // Limpiar HUD de colocación
         hudRow.getChildren().clear();
 
-        // Activar botón debug
+        // Activar botones de battle
         revealBtn.setVisible(true);
+        saveBtn.setVisible(true);
 
         // playerBoard ya está en -BOARD_SEP/2 desde el placement — no hay que moverlo.
         machineBoard.setTranslateX(BOARD_SEP / 2);

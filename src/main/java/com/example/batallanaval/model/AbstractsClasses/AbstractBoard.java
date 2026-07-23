@@ -11,9 +11,11 @@ import com.example.batallanaval.model.Interfaces.Shootable;
 import com.example.batallanaval.model.Interfaces.Vessel;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-public abstract class AbstractBoard implements Shootable {
+public abstract class AbstractBoard implements Shootable, java.io.Serializable {
+    private static final long serialVersionUID = 1L;
     protected static final int SIZE = 10;
 
     protected CellState[][] board;

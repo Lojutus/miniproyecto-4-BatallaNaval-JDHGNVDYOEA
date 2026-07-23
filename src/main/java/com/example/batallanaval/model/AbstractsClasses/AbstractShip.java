@@ -13,7 +13,8 @@ import java.util.List;
 import java.util.Set;
 
 
-public abstract class AbstractShip implements Shootable, Vessel {
+public abstract class AbstractShip implements Shootable, Vessel, java.io.Serializable {
+    private static final long serialVersionUID = 1L;
     protected Coordinate coordinateShip;
     protected Orientation orientation;
     protected List<Coordinate> occupiedCells;
