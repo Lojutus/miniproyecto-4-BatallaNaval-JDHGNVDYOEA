@@ -427,6 +427,8 @@ public class BattleView3D extends Application {
     private void onPlayerShot(int row, int col) {
         if (currentTurn != Turn.PLAYER || phase != Phase.BATTLE) return;
         machineBoard.setClickable(false);
+        try {
+
 
         boolean hit = game.playerShot(row, col);
 
@@ -443,6 +445,10 @@ public class BattleView3D extends Application {
             if (checkGameOver()) return;
             new Timeline(new KeyFrame(Duration.millis(900),
                 e -> setTurnToMachine())).play();
+        }
+        }
+        catch (Exception e) {
+            setTurnToPlayer();
         }
     }
 
