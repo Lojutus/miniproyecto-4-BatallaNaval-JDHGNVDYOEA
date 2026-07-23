@@ -170,17 +170,21 @@ public class MainMenuView extends Application {
         VBox formBox = new VBox(12, nameLabel, nameField, playBtn, continueBtn);
         formBox.setAlignment(Pos.CENTER);
 
-        StackPane card = new StackPane();
-        Rectangle cardBg = new Rectangle(380, 420);
-        cardBg.setFill(Color.web("#000d1a", 0.72));
-        cardBg.setArcWidth(18); cardBg.setArcHeight(18);
-        cardBg.setStroke(Color.web("#00acc1", 0.5));
-        cardBg.setStrokeWidth(1.5);
-
         VBox cardContent = new VBox(24, titleBox, sep, formBox);
         cardContent.setAlignment(Pos.CENTER);
-        cardContent.setPadding(new Insets(32));
-        card.getChildren().addAll(cardBg, cardContent);
+        cardContent.setPadding(new Insets(36, 40, 36, 40));
+        cardContent.setStyle(
+            "-fx-background-color: rgba(0,13,26,0.72);" +
+            "-fx-border-color: rgba(0,172,193,0.5);" +
+            "-fx-border-width: 1.5;" +
+            "-fx-border-radius: 12;" +
+            "-fx-background-radius: 12;"
+        );
+        // Limitar el ancho para que no crezca más de 380px
+        cardContent.setMaxWidth(380);
+
+        StackPane card = new StackPane(cardContent);
+        card.setMaxWidth(380);
 
         // Animación de entrada
         card.setOpacity(0);

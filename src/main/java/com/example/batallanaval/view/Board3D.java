@@ -203,56 +203,48 @@ public class Board3D extends Group {
     // ─────────────────────────────────────────────────────────────────────────
 
     /**
-     * FAIL (agua): coloca una X hecha de dos cilindros delgados sobre la celda.
-     * La X es permanente.
+     * FAIL (agua): X permanente sobre la celda, visible desde la perspectiva 3D.
+     * Dos cajas planas rotadas 45° y -45° en Y formando una X acostada.
      */
     private void placeXMarker(int r, int c) {
         double cx = (c - GRID / 2.0 + 0.5) * STEP;
         double cz = (r - GRID / 2.0 + 0.5) * STEP;
-        double cy = -CELL_HEIGHT - 2;
+        // Y justo encima de la superficie de la celda
+        double cy = -(CELL_HEIGHT / 2.0) - 1;
 
         PhongMaterial mat = new PhongMaterial(Color.WHITE);
-        mat.setSpecularColor(Color.LIGHTGRAY);
+        mat.setSpecularColor(Color.LIGHTCYAN);
 
-        // Brazo 1 (45°)
-        Cylinder arm1 = new Cylinder(2, CELL * 0.75);
+        double armLen = CELL * 0.80;
+        double armW   = 4.0;
+        double armH   = 3.0;  // altura (grosor vertical de la X)
+
+        // Brazo 1: Box acostada rotada 45° en Y
+        Box arm1 = new Box(armLen, armH, armW);
         arm1.setMaterial(mat);
-        arm1.setRotationAxis(Rotate.Y_AXIS);
-        arm1.setRotate(45);
-        arm1.setRotationAxis(Rotate.Z_AXIS);
-        arm1.setRotate(90);
+        arm1.getTransforms().add(new Rotate(45, Rotate.Y_AXIS));
 
-        // Brazo 2 (-45°)
-        Cylinder arm2 = new Cylinder(2, CELL * 0.75);
+        // Brazo 2: Box acostada rotada -45° en Y
+        Box arm2 = new Box(armLen, armH, armW);
         arm2.setMaterial(mat);
-        arm2.setRotationAxis(Rotate.Z_AXIS);
-        arm2.setRotate(90);
+        arm2.getTransforms().add(new Rotate(-45, Rotate.Y_AXIS));
 
         Group xGroup = new Group(arm1, arm2);
-
-        // Rotar el grupo para que ambos brazos formen X vista desde arriba
-        Rotate yRot1 = new Rotate(45,  Rotate.Y_AXIS);
-        Rotate yRot2 = new Rotate(-45, Rotate.Y_AXIS);
-        arm1.getTransforms().add(yRot1);
-        arm2.getTransforms().add(yRot2);
-
         xGroup.setTranslateX(cx);
         xGroup.setTranslateY(cy);
         xGroup.setTranslateZ(cz);
-
         getChildren().add(xGroup);
 
-        // Pequeña animación de aparición
-        xGroup.setScaleX(0); xGroup.setScaleZ(0);
-        Timeline appear = new Timeline(
+        // Animación de aparición (escala desde 0)
+        xGroup.setScaleX(0.1); xGroup.setScaleZ(0.1);
+        new Timeline(
             new KeyFrame(Duration.ZERO,
-                new KeyValue(xGroup.scaleXProperty(), 0),
-                new KeyValue(xGroup.scaleZProperty(), 0)),
-            new KeyFrame(Duration.millis(250),
-                new KeyValue(xGroup.scaleXProperty(), 1, Interpolator.EASE_OUT),
-                new KeyValue(xGroup.scaleZProperty(), 1, Interpolator.EASE_OUT))
-        );
-        appear.play();
+                new KeyValue(xGroup.scaleXProperty(), 0.1),
+                new KeyValue(xGroup.scaleZProperty(), 0.1)),
+            new KeyFrame(Duration.millis(200),
+                new KeyValue(xGroup.scaleXProperty(), 1.0, Interpolator.EASE_OUT),
+                new KeyValue(xGroup.scaleZProperty(), 1.0, Interpolator.EASE_OUT))
+        ).play();
     }
 
     /**
