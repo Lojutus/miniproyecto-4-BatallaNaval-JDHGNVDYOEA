@@ -38,6 +38,9 @@ import javafx.util.Duration;
  */
 public class BattleView3D extends Application {
 
+    /** Nombre pre-cargado desde el menú principal. Si no es null, salta el diálogo. */
+    public static String pendingPlayerName = null;
+
     // ── Constantes de layout ─────────────────────────────────────────────────
     private static final int    W         = 1100;
     private static final int    H         = 720;
@@ -167,8 +170,14 @@ public class BattleView3D extends Application {
         stage.setScene(mainScene);
         stage.show();
 
-        // 8. Fase 1: Setup
-        showSetupDialog(stage);
+        // 8. Fase 1: si viene del menú principal, usar el nombre directo; si no, diálogo
+        if (pendingPlayerName != null) {
+            String name = pendingPlayerName;
+            pendingPlayerName = null;
+            initGameAndStartPlacement(name);
+        } else {
+            showSetupDialog(stage);
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -334,9 +343,41 @@ public class BattleView3D extends Application {
     }
 
     private boolean checkGameOver() {
-        // Se expande cuando GameManager exponga isGameOver().
-        // Por ahora retorna false; los BoardListeners pintan el estado correcto.
+        if (game.playerWins()) {
+            showGameOver(true);
+            return true;
+        }
+        if (game.machineWins()) {
+            showGameOver(false);
+            return true;
+        }
         return false;
+    }
+
+    private void showGameOver(boolean playerWon) {
+        phase = Phase.SETUP; // detener el juego
+        machineBoard.setClickable(false);
+        playerBoard.setClickable(false);
+
+        String msg     = playerWon ? "¡GANASTE! 🏆 Hundiste toda la flota enemiga."
+                                   : "Perdiste... La máquina hundió toda tu flota.";
+        String color   = playerWon ? "#64ffda" : "#ff5252";
+        String btnText = playerWon ? "👑 ¡GANASTE!" : "💀 Perdiste";
+
+        Platform.runLater(() -> {
+            turnLabel.setText(btnText);
+            turnLabel.setStyle("-fx-text-fill: " + color + "; -fx-font-size: 15px; " +
+                               "-fx-font-family: 'Consolas'; -fx-font-weight: bold;");
+            setStatus(msg);
+
+            // Alerta emergente
+            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+                    javafx.scene.control.Alert.AlertType.INFORMATION);
+            alert.setTitle("Fin del juego");
+            alert.setHeaderText(playerWon ? "¡Victoria!" : "¡Derrota!");
+            alert.setContentText(msg + "\n\nReinicia la aplicación para jugar de nuevo.");
+            alert.show();
+        });
     }
 
     // ── Modo debug: revelar/ocultar barcos de la máquina ─────────────────────

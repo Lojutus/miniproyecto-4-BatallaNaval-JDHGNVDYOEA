@@ -154,6 +154,16 @@ public class GameManager
         return mainBoard;
     }
 
+    /** Retorna true si todos los barcos de la máquina están hundidos → jugador gana. */
+    public boolean playerWins() {
+        return mainBoard.allShipsSunk();
+    }
+
+    /** Retorna true si todos los barcos del jugador están hundidos → máquina gana. */
+    public boolean machineWins() {
+        return positionBoard.allShipsSunk();
+    }
+
     /**
      * Devuelve todas las coordenadas ocupadas por los barcos de la máquina.
      * Usado para el modo debug/comprobación del profesor.
