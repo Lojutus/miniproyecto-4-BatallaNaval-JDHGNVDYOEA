@@ -9,7 +9,7 @@ import java.io.*;
 
 public class BoardFileAdapter implements Loadable {
 
-    private static final String SAVE_DIRECTORY = "saves/";
+    private static final String SAVE_DIRECTORY = "controller/helpers/saves/";
     private static final String BOARD_EXTENSION = ".ser";
     private static final String INFO_EXTENSION = ".txt";
 
