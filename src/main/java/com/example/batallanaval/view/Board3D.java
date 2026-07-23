@@ -353,82 +353,35 @@ public class Board3D extends Group {
     public void setOnCellDoubleClicked(BiConsumer<Integer,Integer> h)     { this.onCellDoubleClicked = h; }
     public void setCellHoverListener(BiConsumer<Integer,Integer> h)       { this.onCellHover = h; }
 
-    // ── Modo debug: revelar/ocultar barcos con modelos 3D ────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
+    // MODO DEBUG — revelar/ocultar barcos por color de celda
+    // ─────────────────────────────────────────────────────────────────────────
 
-    private final java.util.List<javafx.scene.Node> debugMarkers = new java.util.ArrayList<>();
-    private boolean debugVisible = false;
+    private static final Color COLOR_REVEAL = Color.web("#ffd600"); // amarillo debug
+    private final java.util.List<int[]> revealedCells = new java.util.ArrayList<>();
 
     /**
-     * Muestra los modelos 3D reales de los barcos de la máquina, semitransparentes.
-     * Segundo clic los oculta (toggle).
+     * Pinta de amarillo las celdas que ocupan los barcos de la máquina.
+     * Solo pinta celdas que aún no han sido disparadas (WATER/SHIP).
      */
-    public void toggleShipReveal(
-            java.util.List<com.example.batallanaval.model.AbstractsClasses.AbstractShip> ships) {
-
-        if (debugVisible) {
-            // Ocultar — quitar todos los modelos debug
-            getChildren().removeAll(debugMarkers);
-            debugMarkers.clear();
-            debugVisible = false;
-            return;
+    public void revealShipCells(java.util.List<Coordinate> coords) {
+        revealedCells.clear();
+        for (Coordinate coord : coords) {
+            int r = coord.getPosX();
+            int c = coord.getPosY();
+            if (r < 0 || r >= GRID || c < 0 || c >= GRID) continue;
+            if (state[r][c] == CellState.HIT || state[r][c] == CellState.SUNK
+                    || state[r][c] == CellState.FAIL) continue;
+            materials[r][c].setDiffuseColor(COLOR_REVEAL);
+            revealedCells.add(new int[]{r, c});
         }
-
-        for (com.example.batallanaval.model.AbstractsClasses.AbstractShip ship : ships) {
-            int size        = ship.getSize();
-            String name     = ship.getName();
-            com.example.batallanaval.model.Classes.Utils.Orientation ori = ship.getOrientation();
-            com.example.batallanaval.model.Classes.Utils.Coordinate  anchor = ship.getCoordinateShip();
-
-            int row = anchor.getPosX();
-            int col = anchor.getPosY();
-
-            // Construir el modelo 3D correcto según nombre/tamaño
-            javafx.scene.Group model = buildDebugModel(size, name, ori);
-
-            // Centrar el modelo sobre las celdas que ocupa
-            java.util.List<int[]> cells = occupiedCells(row, col, size, ori);
-            double cx = 0, cz = 0;
-            for (int[] rc : cells) {
-                cx += (rc[1] - GRID / 2.0 + 0.5) * STEP;
-                cz += (rc[0] - GRID / 2.0 + 0.5) * STEP;
-            }
-            cx /= cells.size();
-            cz /= cells.size();
-
-            model.setTranslateX(cx);
-            model.setTranslateY(-CELL_HEIGHT - 2);
-            model.setTranslateZ(cz);
-            model.setOpacity(0.65);   // semitransparente para que se vea que es debug
-
-            debugMarkers.add(model);
-            getChildren().add(model);
-        }
-
-        debugVisible = true;
     }
 
-    // ── Helpers para debug ────────────────────────────────────────────────────
-
-    private static javafx.scene.Group buildDebugModel(
-            int size, String name,
-            com.example.batallanaval.model.Classes.Utils.Orientation ori) {
-        return switch (name) {
-            case "Submarine" -> Submarine3D.createModel(size, ori);
-            default          -> Ship3D.createModel(size, ori); // AircraftCarrier, Destroyer, Frigate
-        };
-    }
-
-    private static java.util.List<int[]> occupiedCells(
-            int row, int col, int size,
-            com.example.batallanaval.model.Classes.Utils.Orientation ori) {
-        java.util.List<int[]> list = new java.util.ArrayList<>();
-        for (int i = 0; i < size; i++) {
-            if (ori == com.example.batallanaval.model.Classes.Utils.Orientation.HORINZONTAL) {
-                list.add(new int[]{row, col + i});
-            } else {
-                list.add(new int[]{row + i, col});
-            }
+    /** Restaura el color original de las celdas reveladas. */
+    public void hideShipCells() {
+        for (int[] rc : revealedCells) {
+            materials[rc[0]][rc[1]].setDiffuseColor(colorFor(state[rc[0]][rc[1]]));
         }
-        return list;
+        revealedCells.clear();
     }
 }

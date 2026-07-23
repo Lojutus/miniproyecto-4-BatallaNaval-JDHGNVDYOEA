@@ -132,12 +132,7 @@ public class BattleView3D extends Application {
             "-fx-background-color: #f57f17; -fx-text-fill: white; " +
             "-fx-font-family: 'Consolas'; -fx-font-size: 12px; -fx-cursor: hand;");
         revealBtn.setVisible(false); // se activa al iniciar la batalla
-        revealBtn.setOnAction(e -> {
-            var ships = game.getMachineShips();
-            machineBoard.toggleShipReveal(ships);
-            boolean showing = revealBtn.getText().startsWith("👁");
-            revealBtn.setText(showing ? "🙈 Ocultar barcos (debug)" : "👁 Revelar barcos (debug)");
-        });
+        revealBtn.setOnAction(e -> toggleMachineShipReveal());
 
         hudRow = new HBox();
         hudRow.setAlignment(Pos.CENTER);
@@ -342,6 +337,23 @@ public class BattleView3D extends Application {
         // Se expande cuando GameManager exponga isGameOver().
         // Por ahora retorna false; los BoardListeners pintan el estado correcto.
         return false;
+    }
+
+    // ── Modo debug: revelar/ocultar barcos de la máquina ─────────────────────
+
+    private boolean debugVisible = false;
+
+    private void toggleMachineShipReveal() {
+        if (debugVisible) {
+            machineBoard.hideShipCells();
+            debugVisible = false;
+            revealBtn.setText("👁 Revelar barcos (debug)");
+        } else {
+            var coords = game.getMachineShipCoordinates();
+            machineBoard.revealShipCells(coords);
+            debugVisible = true;
+            revealBtn.setText("🙈 Ocultar barcos (debug)");
+        }
     }
 
     // ── BoardListeners ────────────────────────────────────────────────────────
