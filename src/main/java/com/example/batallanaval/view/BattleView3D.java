@@ -363,7 +363,13 @@ public class BattleView3D extends Application {
         playerBoard.setVisible(true);
         machineBoard.setVisible(true);
         machineBoard.setClickable(true);
-        machineBoard.setOnCellClicked(this::onPlayerShot);
+        try{
+            machineBoard.setOnCellClicked(this::onPlayerShot);
+        }
+        catch(Exception ex){
+            setStatus("Error de disparo ");
+        }
+
         playerBoard.setClickable(false);
     }
 
@@ -389,8 +395,10 @@ public class BattleView3D extends Application {
     private void onPlayerShot(int row, int col) {
         if (currentTurn != Turn.PLAYER || phase != Phase.BATTLE) return;
         machineBoard.setClickable(false);
+        try{
 
-        boolean hit = game.playerShot(row, col);
+            boolean hit = game.playerShot(row, col);
+
 
         if (hit) {
             // IMPACTO — el jugador sigue disparando
@@ -405,7 +413,11 @@ public class BattleView3D extends Application {
             if (checkGameOver()) return;
             new Timeline(new KeyFrame(Duration.millis(900),
                 e -> setTurnToMachine())).play();
+        }} catch (Exception ex){
+            setStatus("Error de disparo ");
+            setTurnToPlayer();
         }
+
     }
 
     private void triggerMachineShot() {
