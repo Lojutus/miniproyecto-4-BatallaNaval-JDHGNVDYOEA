@@ -1,0 +1,4 @@
+--patch-module
+com.example.batallanaval=_
+--add-reads
+com.example.batallanaval=ALL-UNNAMED
