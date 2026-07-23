@@ -1,16 +1,13 @@
 package com.example.batallanaval.view;
 
 import com.example.batallanaval.controller.GameManager;
-import com.example.batallanaval.model.Classes.FactoryMethod.ShipFactory;
 import com.example.batallanaval.model.Classes.Utils.Orientation;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
@@ -29,7 +26,7 @@ import java.util.List;
  *  4. Clic sobre una celda válida → confirma la posición.
  *  5. Cuando los 10 barcos están colocados llama al callback onAllPlaced.
  */
-public class ShipPlacer3D {
+public class ShipLoader3D {
 
     // ── Fleet ─────────────────────────────────────────────────────────────────
     // Flota: 1 AircraftCarrier(4), 2 Submarine(3), 3 Destroyer(2), 4 Frigate(1)
@@ -75,7 +72,7 @@ public class ShipPlacer3D {
 
     // ── Constructor ───────────────────────────────────────────────────────────
 
-    public ShipPlacer3D(GameManager game, Board3D board, Group world) {
+    public ShipLoader3D(GameManager game, Board3D board, Group world) {
         this.game  = game;
         this.board = board;
         this.world = world;

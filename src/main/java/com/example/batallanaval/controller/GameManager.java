@@ -227,6 +227,15 @@ public class GameManager
         }
         return result;
     }
+    public java.util.List<com.example.batallanaval.model.AbstractsClasses.AbstractShip> getPlayerShips() {
+        java.util.List<com.example.batallanaval.model.AbstractsClasses.AbstractShip> result = new java.util.ArrayList<>();
+        for (com.example.batallanaval.model.Interfaces.Vessel v : positionBoard.getShips()) {
+            if (v instanceof com.example.batallanaval.model.AbstractsClasses.AbstractShip s) {
+                result.add(s);
+            }
+        }
+        return result;
+    }
 }
 
 

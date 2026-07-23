@@ -3,6 +3,7 @@ package com.example.batallanaval.view;
 import com.example.batallanaval.controller.GameManager;
 import com.example.batallanaval.model.Classes.Utils.CellState;
 import com.example.batallanaval.model.Classes.Utils.Coordinate;
+import com.example.batallanaval.model.Classes.Utils.Orientation;
 import com.example.batallanaval.model.Interfaces.BoardListener;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
@@ -248,6 +249,7 @@ public class BattleView3D extends Application {
 
     private void initGameFromSave(String nickname) {
         boolean loaded = game.LoadGame(nickname);
+
         if (!loaded) {
             // Si falla la carga, iniciar partida nueva
             setStatus("No se encontró partida guardada. Iniciando nueva...");
@@ -265,6 +267,42 @@ public class BattleView3D extends Application {
         playerBoard.setTranslateX(-BOARD_SEP / 2);
         playerBoard.setVisible(true);
         playerBoard.revealShipCells(game.getPlayerShipCoordinates());
+        //Aqui debe de ir el renderizado llamado con  java.util.List<com.example.batallanaval.model.AbstractsClasses.AbstractShip> getPlayerShips()
+
+        for (com.example.batallanaval.model.AbstractsClasses.AbstractShip ship : game.getPlayerShips()) {
+            int size = ship.getSize();
+            Orientation ori = ship.getOrientation();
+
+            int row = ship.getCoordinateShip().getPosX();
+            int col = ship.getCoordinateShip().getPosY();
+            String type = ship.getClass().getSimpleName();
+
+            Group model = switch (type) {
+                case "AircraftCarrier" -> Ship3D.createModel(size, ori);
+                case "Submarine"       -> Submarine3D.createModel(size, ori);
+                case "Destroyer"       -> Ship3D.createModel(size, ori);
+                default                -> Ship3D.createModel(size, ori);
+            };
+
+            java.util.List<int[]> cells = new java.util.ArrayList<>();
+            for (int i = 0; i < size; i++) {
+                cells.add(ori == Orientation.HORINZONTAL ? new int[]{row, col + i} : new int[]{row + i, col});
+            }
+            double cx = 0, cz = 0;
+            for (int[] rc : cells) {
+                cx += (rc[1] - Board3D.GRID / 2.0 + 0.5) * Board3D.STEP;
+                cz += (rc[0] - Board3D.GRID / 2.0 + 0.5) * Board3D.STEP;
+            }
+            cx /= cells.size();
+            cz /= cells.size();
+
+            model.setTranslateX(cx + playerBoard.getTranslateX());
+            model.setTranslateZ(cz + playerBoard.getTranslateZ());
+            model.setTranslateY(-Board3D.CELL_HEIGHT);
+
+            world.getChildren().add(model);
+        }
+
 
         // Ir directo a batalla sin placement
         startBattle();
