@@ -20,7 +20,7 @@ public abstract class AbstractBoard implements Shootable, java.io.Serializable {
 
     protected CellState[][] board;
     protected List<Vessel> ships;
-    protected List<BoardListener> listeners;
+    protected transient List<BoardListener> listeners;
 
     public AbstractBoard() {
         this.board = new CellState[SIZE][SIZE];
@@ -100,6 +100,7 @@ public abstract class AbstractBoard implements Shootable, java.io.Serializable {
     }
 
     public void addListener(BoardListener listener) {
+        if(listeners == null) { listeners = new ArrayList<BoardListener>(); }
         listeners.add(listener);
     }
 

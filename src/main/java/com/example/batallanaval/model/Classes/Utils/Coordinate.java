@@ -1,9 +1,10 @@
 package com.example.batallanaval.model.Classes.Utils;
 
 import java.io.PipedOutputStream;
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Coordinate {
+public class Coordinate implements Serializable {
     private final int posX;
     private final int posY;
 

@@ -264,6 +264,7 @@ public class BattleView3D extends Application {
         setStatus("Partida cargada. ¡Continuamos la batalla!");
         playerBoard.setTranslateX(-BOARD_SEP / 2);
         playerBoard.setVisible(true);
+        playerBoard.revealShipCells(game.getPlayerShipCoordinates());
 
         // Ir directo a batalla sin placement
         startBattle();

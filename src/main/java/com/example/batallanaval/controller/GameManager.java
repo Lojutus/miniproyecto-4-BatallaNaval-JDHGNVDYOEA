@@ -66,6 +66,8 @@ public class GameManager
             gameState =  FileManager.getInstance().load(nickname);
             positionBoard = gameState.getPositionBoard();
             mainBoard = gameState.getMainBoard();
+            player = new Human(nickname, positionBoard, mainBoard);
+            machine = new Machine("machine", mainBoard, positionBoard);
             return true;
         }
         catch (GameLoadableException e){
@@ -199,6 +201,14 @@ public class GameManager
     public java.util.List<com.example.batallanaval.model.Classes.Utils.Coordinate> getMachineShipCoordinates() {
         java.util.List<com.example.batallanaval.model.Classes.Utils.Coordinate> coords = new java.util.ArrayList<>();
         for (com.example.batallanaval.model.Interfaces.Vessel ship : mainBoard.getShips()) {
+            coords.addAll(ship.getOccupiedCells());
+        }
+        return coords;
+    }
+
+    public java.util.List<com.example.batallanaval.model.Classes.Utils.Coordinate> getPlayerShipCoordinates() {
+        java.util.List<com.example.batallanaval.model.Classes.Utils.Coordinate> coords = new java.util.ArrayList<>();
+        for (com.example.batallanaval.model.Interfaces.Vessel ship : positionBoard.getShips()) {
             coords.addAll(ship.getOccupiedCells());
         }
         return coords;
